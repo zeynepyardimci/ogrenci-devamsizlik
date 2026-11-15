@@ -68,6 +68,9 @@ Ayrıntılar için → [`RATCHET_LOG.md`](RATCHET_LOG.md)
 
 ```
 ogrenci-devamsizlik/
+├── .github/
+│   └── workflows/
+│       └── ci.yml               # GitHub Actions CI iş akışı (Ruby 3.4)
 ├── .gitignore                   # Git hariç tutma kuralları (.ruby-lsp, .bundle vb.)
 ├── .ruby-version                 # 3.4
 ├── AGENTS.md                     # Bağlayıcı kurallar

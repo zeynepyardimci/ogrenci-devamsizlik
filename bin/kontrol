@@ -11,6 +11,10 @@
 
 require "open3"
 
+# Windows ortamında Türkçe / UTF-8 karakterlerin konsolda ve require yollarında
+# sorunsuz çözümlenmesi için konsol kod sayfasını UTF-8 (65001) yap.
+system("chcp 65001 >nul 2>&1") if RUBY_PLATFORM =~ /mswin|mingw/
+
 ROOT = File.expand_path(File.join(File.dirname(File.realpath(__FILE__)), ".."))
 
 PASS = "\e[32m✓\e[0m"
