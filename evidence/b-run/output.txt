@@ -1,0 +1,40 @@
+
+==============================================================
+  Ogrenci Devamsizlik Sistemi — Dogrulama Betigi
+==============================================================
+
+→ Adım 0: bin/kontrol oz-sozdizim kontrolu
+  ✓ bin/kontrol sozdiziimi gecerli
+
+→ Adım 1: Ruby sozdizim kontrolu
+  ✓ lib/devamsizlik_kontrol.rb
+  ✓ lib/ogrenci.rb
+  ✓ test/ogrenci_test.rb
+  ✓ bin/izle.rb
+
+→ Adım 2: lib/ dosyalari varlik kontrolu (ZORUNLU)
+  ✓ lib/ogrenci.rb mevcut
+  ✓ lib/devamsizlik_kontrol.rb mevcut
+
+→ Adım 3: Minitest testleri
+  → ruby -Ilib test/ogrenci_test.rb
+
+Run options: --seed 57333
+
+# Running:
+
+...............................................
+
+Finished in 0.001630s, 28834.3587 runs/s, 41717.7955 assertions/s.
+
+47 runs, 68 assertions, 0 failures, 0 errors, 0 skips
+
+  Test ozeti:
+    runs=47  assertions=68  failures=0  errors=0  skips=0
+
+  ✓ Tum testler gecti — 47 runs, 68 assertions
+
+==============================================================
+  TUM KONTROLLER BASARILI
+==============================================================
+

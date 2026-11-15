@@ -1,0 +1,191 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# bin/kontrol
+# Doğrulama betiği — Ruby 3.4 standart kütüphanesi dışında bağımlılık yok.
+# Kullanım: ruby bin/kontrol
+#
+# Çıkış kodları:
+#   0  — Tüm kontroller başarılı (lib/ mevcut, testler geçti)
+#   1  — Herhangi bir kontrol başarısız
+
+require "open3"
+
+ROOT = File.expand_path(File.join(File.dirname(File.realpath(__FILE__)), ".."))
+
+PASS = "\e[32m✓\e[0m"
+FAIL = "\e[31m✗\e[0m"
+INFO = "\e[34m→\e[0m"
+WARN = "\e[33m!\e[0m"
+
+def baslik(metin)
+  puts
+  puts "\e[1m\e[34m#{"=" * 62}\e[0m"
+  puts "\e[1m  #{metin}\e[0m"
+  puts "\e[34m#{"=" * 62}\e[0m"
+end
+
+def adim(no, metin)
+  puts "\n#{INFO} Adım #{no}: #{metin}"
+end
+
+def kisa_yol(tam, root)
+  tam.sub(root + "/", "").sub(root + "\\", "")
+end
+
+def safe_print(str)
+  return if str.nil? || str.empty?
+  puts str.encode("UTF-8", invalid: :replace, undef: :replace, replace: "?")
+end
+
+hatalar = []
+
+# ─── Adım 0: bin/kontrol'ün kendi sözdizimini kontrol et ──────────────────
+baslik "Ogrenci Devamsizlik Sistemi — Dogrulama Betigi"
+adim 0, "bin/kontrol oz-sozdizim kontrolu"
+
+this_file = File.realpath(__FILE__)
+_o, err, st = Open3.capture3("ruby", "-c", this_file)
+if st.success?
+  puts "  #{PASS} bin/kontrol sozdiziimi gecerli"
+else
+  puts "  #{FAIL} bin/kontrol sozdizim hatasi!"
+  puts "       #{err.strip}"
+  hatalar << "bin/kontrol sozdizim hatasi"
+end
+
+# ─── Adım 1: Ruby sözdizimi kontrolü (lib/ + test/ + bin/) ───────────────
+adim 1, "Ruby sozdizim kontrolu"
+
+rb_dosyalar = Dir.glob(File.join(ROOT, "{lib,test,bin}/**/*.rb")) +
+              Dir.glob(File.join(ROOT, "*.rb"))
+
+if rb_dosyalar.empty?
+  puts "  #{WARN} Kontrol edilecek .rb dosyasi yok."
+else
+  rb_dosyalar.each do |dosya|
+    _stdout, stderr, status = Open3.capture3("ruby", "-c", dosya)
+    kisa = kisa_yol(dosya, ROOT)
+    if status.success?
+      puts "  #{PASS} #{kisa}"
+    else
+      puts "  #{FAIL} #{kisa}"
+      puts "       #{stderr.strip}"
+      hatalar << "Sozdizim hatasi: #{kisa}"
+    end
+  end
+end
+
+# ─── Adım 2: lib/ dosyalarının zorunlu varlık kontrolü ────────────────────
+adim 2, "lib/ dosyalari varlik kontrolu (ZORUNLU)"
+
+beklenen_lib = %w[lib/ogrenci.rb lib/devamsizlik_kontrol.rb]
+lib_eksik = false
+
+beklenen_lib.each do |yol|
+  tam = File.join(ROOT, yol)
+  if File.exist?(tam)
+    puts "  #{PASS} #{yol} mevcut"
+  else
+    puts "  #{FAIL} #{yol} YOK"
+    hatalar << "Eksik: #{yol}"
+    lib_eksik = true
+  end
+end
+
+if lib_eksik
+  puts
+  puts "  #{FAIL} lib/ dosyalari eksik — testler calistirilmayacak."
+  puts "     B kosusunda lib/ olusturulduğunda tum testler gercekten calisacak."
+  puts
+  puts "\e[34m#{"=" * 62}\e[0m"
+  puts "\e[31m\e[1m  #{hatalar.size} SORUN — Cikis kodu: 1\e[0m"
+  puts "\e[34m#{"=" * 62}\e[0m"
+  puts
+  exit 1
+end
+
+# ─── Adım 3: Minitest testlerini çalıştır ────────────────────────────────
+adim 3, "Minitest testleri"
+
+test_dosyasi = File.join(ROOT, "test", "ogrenci_test.rb")
+lib_dizini   = File.join(ROOT, "lib")
+
+unless File.exist?(test_dosyasi)
+  puts "  #{FAIL} test/ogrenci_test.rb bulunamadi"
+  hatalar << "Test dosyasi eksik"
+  exit 1
+end
+
+puts "  #{INFO} ruby -Ilib test/ogrenci_test.rb"
+puts
+
+stdout, stderr, status = Open3.capture3(
+  "ruby", "-I", lib_dizini, test_dosyasi,
+  chdir: ROOT
+)
+
+safe_print(stdout)
+safe_print(stderr)
+
+# Test çıktısını ayrıştır: runs, assertions, failures, errors, skips
+test_ozeti = (stdout + stderr)
+              .encode("UTF-8", invalid: :replace, undef: :replace, replace: "?")
+
+if test_ozeti =~ /(\d+) runs,\s*(\d+) assertions,\s*(\d+) failures,\s*(\d+) errors,\s*(\d+) skips/
+  runs       = $1.to_i
+  assertions = $2.to_i
+  failures   = $3.to_i
+  errors     = $4.to_i
+  skips      = $5.to_i
+else
+  runs       = test_ozeti[/(\d+) runs\b(?!\/)/,       1]&.to_i
+  assertions = test_ozeti[/(\d+) assertions\b(?!\/)/, 1]&.to_i
+  failures   = test_ozeti[/(\d+) failures\b/,         1]&.to_i
+  errors     = test_ozeti[/(\d+) errors\b/,           1]&.to_i
+  skips      = test_ozeti[/(\d+) skips\b/,            1]&.to_i
+end
+
+puts "\n  Test ozeti:"
+puts "    runs=#{runs}  assertions=#{assertions}  " \
+     "failures=#{failures}  errors=#{errors}  skips=#{skips}"
+
+# Başarı koşulları — hepsi birlikte sağlanmalı:
+#   1. Çıkış kodu 0
+#   2. En az 1 assertions
+#   3. 0 failures, 0 errors, 0 skips
+if !status.success?
+  puts "\n  #{FAIL} Minitest basarisiz (cikis kodu #{status.exitstatus})"
+  hatalar << "Minitest basarisiz (cikis kodu #{status.exitstatus})"
+elsif assertions.nil? || assertions < 1
+  puts "\n  #{FAIL} Hic assertion calistirilmadi (#{assertions.inspect}) — sahte basari!"
+  hatalar << "0 assertion: testler gercekten calismadi"
+elsif (failures || 0) > 0
+  puts "\n  #{FAIL} #{failures} test basarisiz"
+  hatalar << "#{failures} test basarisiz"
+elsif (errors || 0) > 0
+  puts "\n  #{FAIL} #{errors} test hatali"
+  hatalar << "#{errors} test hatali"
+elsif (skips || 0) > 0
+  puts "\n  #{FAIL} #{skips} test atlandi (skip) — harness atlanan testleri kabul etmez"
+  hatalar << "#{skips} test atlandi"
+else
+  puts "\n  #{PASS} Tum testler gecti — #{runs} runs, #{assertions} assertions"
+end
+
+# ─── Özet ─────────────────────────────────────────────────────────────────
+puts
+puts "\e[34m#{"=" * 62}\e[0m"
+
+if hatalar.empty?
+  puts "\e[32m\e[1m  TUM KONTROLLER BASARILI\e[0m"
+  puts "\e[34m#{"=" * 62}\e[0m"
+  puts
+  exit 0
+else
+  puts "\e[31m\e[1m  #{hatalar.size} SORUN TESPIT EDILDI:\e[0m"
+  hatalar.each { |h| puts "  x #{h}" }
+  puts "\e[34m#{"=" * 62}\e[0m"
+  puts
+  exit 1
+end

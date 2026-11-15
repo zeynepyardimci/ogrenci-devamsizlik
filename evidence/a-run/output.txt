@@ -1,0 +1,42 @@
+
+======================================================================
+   ÖĞRENCİ DEVAMSIZLIK KONTROL SİSTEMİ
+   Devamsızlık Sınırı: %30  |  Tarih: 15.11.2026
+======================================================================
+
+No     Öğrenci Adı              Toplam     Devamsız     Oran %   Durum       
+----------------------------------------------------------------------
+2301   Ayşe Kaya                    40            4       10.0   ✓  Normal (8 hak)
+2302   Mehmet Demir                 40           13       32.5   ⚠  SINIR AŞILDI
+2303   Zeynep Arslan                40            7       17.5   ✓  Normal (5 hak)
+2304   Ali Çelik                    40           15       37.5   ⚠  SINIR AŞILDI
+2305   Fatma Yıldız                 40            2        5.0   ✓  Normal (10 hak)
+2306   Emre Şahin                   40           12       30.0   ✓  Normal (0 hak)
+2307   Selin Aydın                  40           20       50.0   ⚠  SINIR AŞILDI
+2308   Burak Korkmaz                40            0        0.0   ✓  Normal (12 hak)
+2309   Merve Doğan                  40           11       27.5   ✓  Normal (1 hak)
+2310   Hasan Yılmaz                 40           18       45.0   ⚠  SINIR AŞILDI
+2311   Cansu Öztürk                 40            9       22.5   ✓  Normal (3 hak)
+2312   Tarık Bulut                  40           14       35.0   ⚠  SINIR AŞILDI
+2313   Nisan Erdoğan                40            3        7.5   ✓  Normal (9 hak)
+2314   Ozan Güneş                   40           16       40.0   ⚠  SINIR AŞILDI
+2315   İpek Tekin                   40            6       15.0   ✓  Normal (6 hak)
+
+======================================================================
+  ÖZET
+----------------------------------------------------------------------
+  Toplam Öğrenci Sayısı  : 15
+  Normal Durumdaki       : 9
+  Sınırı Aşan            : 6
+  Ortalama Devamsızlık   : %25.0
+======================================================================
+
+  ⚠  DEVAMSIZLIK SINIRINI AŞAN ÖĞRENCİLER
+  ----------------------------------------
+  • [2302] Mehmet Demir         — %32.5  (sınırı %2.5 aştı)
+  • [2304] Ali Çelik            — %37.5  (sınırı %7.5 aştı)
+  • [2307] Selin Aydın          — %50.0  (sınırı %20.0 aştı)
+  • [2310] Hasan Yılmaz         — %45.0  (sınırı %15.0 aştı)
+  • [2312] Tarık Bulut          — %35.0  (sınırı %5.0 aştı)
+  • [2314] Ozan Güneş           — %40.0  (sınırı %10.0 aştı)
+
